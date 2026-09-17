@@ -1,0 +1,551 @@
+jenkins-setup 
+sudo -i
+yum update -y
+wget -O /etc/yum.repos.d/jenkins.repo     https://pkg.jenkins.io/rpm/jenkins.repo
+sudo yum install java-21-amazon-corretto -y
+java -version
+yum install jenkins -y
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+browser-->ip:8080->jenkins dashboard
+cat /var/lib/jenkins/secrets/initialAdminPassword
+  after accessing dashborad -build node will be offline to get it online -click on built node-configure-chnage values -
+   get back to ec2 jenkins server-  systemctl restart jenkins
+again sign in 
+for building a job you nedd git repository from git hub 
+   on server install git,maven-  yum git -y
+yum install git -y
+cd /var/lib/jenkins/workspace/job1
+ ll
+cat file3
+yum install maven -y
+   
+ alternatives --config java
+ export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
+ export PATH=$JAVA_HOME/bin:$PATH
+ echo "export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto" >> ~/.bashrc
+ echo "export PATH=$JAVA_HOME/bin:$PATH" >> ~/.bashrc
+ source ~/.bashrc
+ mvn -v
+     history
+server1-jenkins
+ server-2-tomcat
+sudo -i
+yum update -y 
+sudo dnf install java-21-amazon-corretto -y
+wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.117/bin/apache-tomcat-9.0.117.tar.gz (get it from dlcdn apache.org)
+tar -xvzf apache-tomcat-9.0.117.tar.gz
+ll
+cd bin/
+ll
+./startup.sh
+cp publicip:8080
+403 error
+cd ..
+cd webapps/manager/META-INF/
+vim context.xml
+esc shift:21,22d
+esc shift:wq
+refresh browser and check 
+401 errorc	c
+cd ../../../
+ll
+cd conf/
+ll
+vim tomcat-users.xml
+G give uparrow 3YY P
+  <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
+  <user username="tomcat" password="123456" roles="manager-gui,manager-script"/>\
+esc sgit:wq
+cd ..
+ll
+cd bin/
+./shutdown.sh
+./startup.sh
+got browser refresh 
+sign in with credentials
+
+
+go to server-1
+jenkins-manage jenkins-plugins-available plugins-deploy to container -install\
+my deployment-postbuildactions-deploy to war/ear to a container -save 
+buildnow 
+after building check in tomact dashboard -application of your desired context path check it  
+ THROUGH JENKINS APPLICATION DEPLOYED SUCCESSFULLY IN TOMCAT 
+
+nexus installation
+sudo -i
+sudo yum update -y
+sudo dnf install java-21-amazon-corretto -y
+java -version
+mkdir /app
+ls
+cd /app (/-os related files )
+wget https://download.sonatype.com/nexus/3/nexus-3.83.1-03-linux-x86_64.tar.gz
+ls -lh
+tar -xvf nexus-3.83.1-03-linux-x86_64.tar.gz
+ll
+sudo mv nexus-3.83.1-03 nexus
+sudo useradd nexus
+chown -R nexus:nexus nexus sonatype-work
+ll
+cd nexus/ 
+ll
+cd bin/ 
+ll
+echo 'run_as_user="nexus"' > nexus.rc
+cat nexus.rc
+vim  /etc/systemd/system/nexus.service
+
+[Unit]
+Description=nexus service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+User=nexus
+Group=nexus
+ExecStart=/app/nexus/bin/nexus start
+ExecStop=/app/nexus/bin/nexus stop
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+
+sudo chkconfig nexus on
+sudo systemctl start nexus
+sudo systemctl status nexus
+
+
+Options	Description
+Discard old builds-	If we want to discard old builds while starting the execution of the new build then we select this option.
+GitHub Project	This option specifies that we are running our build with GitHub. We specify the URL of the GitHub project.
+This project is parameterized	If we want to run our build with different parameters that would be passed during run time then we will use this option. Every parameter has some Name as well as Value.
+Throttle builds	This option enforces a minimum time between builds based on the desired maximum rate.
+Disable this project	If this option will be checked then no new build of this project will be executed.
+Execute concurrent builds if necessary	If this option will be checked then we can execute multiple builds of this project in parallel.
+
+jenkins-script
+
+sudo yum update –y
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+sudo yum upgrade -y
+sudo yum install java-21-amazon-corretto -y
+sudo yum install jenkins git maven -y
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+sudo mkdir -p /var/tmp_disk
+sudo chmod 1777 /var/tmp_disk
+sudo mount --bind /var/tmp_disk /tmp
+echo '/var/tmp_disk /tmp none bind 0 0' | sudo tee -a /etc/fstab
+sudo systemctl mask tmp.mount
+df -h /tmp
+sudo systemctl restart jenkins
+export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
+export PATH=$JAVA_HOME/bin:$PATH
+echo "export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto" >> ~/.bashrc
+echo "export PATH=$JAVA_HOME/bin:$PATH" >> ~/.bashrc
+source ~/.bashrc
+mvn -v
+
+
+
+
+Tomcat-script
+yum install java-21-amazon-corretto -y
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.117/bin/apache-tomcat-9.0.117.tar.gz
+tar -zxvf apache-tomcat-9.0.117.tar.gz
+sed -i '56  a\<role rolename="manager-gui"/>' apache-tomcat-9.0.117/conf/tomcat-users.xml
+sed -i '57  a\<role rolename="manager-script"/>' apache-tomcat-9.0.117/conf/tomcat-users.xml
+sed -i '58  a\<user username="tomcat" password="123456" roles="manager-gui, manager-script"/>' apache-tomcat-9.0.117/conf/tomcat-users.xml
+sed -i '59  a\</tomcat-users>' apache-tomcat-9.0.117/conf/tomcat-users.xml
+sed -i '56d' apache-tomcat-9.0.117/conf/tomcat-users.xml
+sed -i '21d' apache-tomcat-9.0.117/webapps/manager/META-INF/context.xml
+sed -i '22d'  apache-tomcat-9.0.117/webapps/manager/META-INF/context.xml
+sh apache-tomcat-9.0.117/bin/startup.sh
+
+nexus-script-t2.medium -8081
+sudo yum update -y
+sudo yum install wget -y
+sudo yum install java-21-amazon-corretto -y
+sudo mkdir -p /app
+cd /app
+sudo wget https://download.sonatype.com/nexus/3/nexus-3.79.1-04-linux-x86_64.tar.gz
+sudo tar -xvf nexus-3.79.1-04-linux-x86_64.tar.gz
+sudo mv nexus-3.79.1-04 nexus
+sudo adduser nexus
+sudo mkdir -p /app/sonatype-work
+sudo chown -R nexus:nexus /app/nexus
+sudo chown -R nexus:nexus /app/sonatype-work
+sudo sed -i 's|#run_as_user=""|run_as_user="nexus"|g' /app/nexus/bin/nexus
+sudo tee /etc/systemd/system/nexus.service > /dev/null <<EOF
+
+[Unit]
+Description=nexus service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+User=nexus
+Group=nexus
+ExecStart=/app/nexus/bin/nexus start
+ExecStop=/app/nexus/bin/nexus stop
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable nexus
+sudo systemctl start nexus
+sudo systemctl status nexus
+
+sudo ss -tulnp | grep 8081
+
+sudo cat /app/sonatype-work/nexus3/admin.password
+
+
+sonarqube installation-t2.medium-9000
+#!/bin/bash
+
+yum update -y
+
+cd /opt/
+
+yum install wget unzip java-17-amazon-corretto -y
+
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-8.9.6.50800.zip
+unzip sonarqube-8.9.6.50800.zip
+
+useradd sonar
+
+chown -R sonar:sonar /opt/sonarqube-8.9.6.50800
+
+chmod -R 775 /opt/sonarqube-8.9.6.50800
+
+sudo -u sonar sh /opt/sonarqube-8.9.6.50800/bin/linux-x86-64/sonar.sh start
+
+sleep 20
+
+ss -tulnp | grep 9000
+
+echo "======================================="
+echo "SonarQube URL:"
+echo "http://<PUBLIC-IP>:9000"
+echo ""
+echo "Default Username: admin"
+echo "Default Password: admin"
+echo "======================================="
+
+For explaining a Jenkins Multibranch Pipeline demo, create a Git repository with multiple branches and a Jenkinsfile in each branch.
+A Multibranch Pipeline is a Jenkins job that automatically discovers and creates separate pipelines for each branch in a Git repository.
+
+Instead of creating individual Jenkins jobs for main, dev, and qa, Jenkins creates and manages them automatically.
+
+Without Multibranch Pipeline
+Git Repository
+ ├── main
+ ├── dev
+ └── qa
+
+Jenkins
+ ├── Job-Main
+ ├── Job-Dev
+ └── Job-QA
+
+You must create and maintain multiple Jenkins jobs manually.
+
+With Multibranch Pipeline
+Git Repository
+ ├── main
+ ├── dev
+ └── qa
+
+        ↓
+
+Jenkins Multibranch Pipeline
+        ↓
+
+Automatically creates:
+
+main pipeline
+dev pipeline
+qa pipeline
+How It Works
+Jenkins connects to GitHub/GitLab.
+Scans the repository.
+Finds branches containing a Jenkinsfile.
+Creates a pipeline for each branch.
+When code is pushed to a branch, only that branch's pipeline runs.
+
+Example:
+
+Push to dev
+    ↓
+Only dev pipeline runs
+
+Push to qa
+    ↓
+Only qa pipeline runs
+Repository Structure
+MULTIBRANCH-PIPELINE
+├── Jenkinsfile
+├── README.md
+
+Branches:
+├── main
+├── dev
+└── qa
+
+Each branch can have its own Jenkinsfile or different code.
+
+Real-World Example
+dev → Deploy to Development Environment
+qa → Deploy to QA Environment
+main → Deploy to Production
+Developer Pushes Code
+        ↓
+      dev
+        ↓
+ Jenkins Dev Pipeline
+        ↓
+ Deploy to Dev Server
+
+Jenkinsfile
+A Jenkinsfile is a text file that contains the complete definition of your CI/CD pipeline as code.
+
+Think of it as a script that tells Jenkins:
+
+What to build
+How to test
+How to scan for vulnerabilities
+How to deploy
+
+Instead of configuring jobs manually in the Jenkins UI, you store the pipeline in a Jenkinsfile inside your Git repository.
+Step 1: Create Repository
+mkdir multibranch-demo
+cd multibranch-demo
+
+git init
+Step 2: Create Main Branch
+echo "# Multibranch Pipeline Demo" > README.md
+
+cat > Jenkinsfile << EOF
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building Main Branch'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing Main Branch'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying Main Branch to Production'
+            }
+        }
+    }
+}
+EOF
+
+git add .
+git commit -m "Initial commit on main"
+git branch -M main
+Step 3: Create Dev Branch
+git checkout -b dev
+
+cat > Jenkinsfile << EOF
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building Dev Branch'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing Dev Branch'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying Dev Branch to Development'
+            }
+        }
+    }
+}
+EOF
+
+git add .
+git commit -m "Dev branch Jenkinsfile"
+Step 4: Create QA Branch
+git checkout main
+git checkout -b qa
+
+cat > Jenkinsfile << EOF
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building QA Branch'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running QA Tests'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying QA Branch'
+            }
+        }
+    }
+}
+EOF
+
+git add .
+git commit -m "QA branch Jenkinsfile"
+Step 5: Push to GitHub
+git remote add origin <YOUR_REPO_URL>
+
+git push -u origin main
+git push -u origin dev
+git push -u origin qa
+Step 6: Jenkins Multibranch Pipeline
+Jenkins → New Item.
+Select Multibranch Pipeline.
+Add GitHub repository URL.
+Save.
+Click Scan Multibranch Pipeline Now.
+
+Jenkins will automatically discover:
+
+main
+dev
+qa
+
+and create separate pipelines for each branch.
+
+Demo Explanation
+main → Production deployment.
+dev → Development environment deployment.
+qa → QA testing environment deployment.
+
+When you commit to any branch:
+
+git checkout dev
+echo "New Change" >> app.txt
+git add .
+git commit -m "New feature"
+git push
+
+Jenkins automatically triggers only the dev pipeline, demonstrating the core benefit of a Multibranch Pipeline.
+
+What are Parallel Stages in Jenkins?
+
+Normally Jenkins executes stages one after another:
+
+Build
+  ↓
+Test
+  ↓
+Security Scan
+  ↓
+Deploy
+
+This takes more time because each stage waits for the previous one to finish.
+
+With Parallel Stages, Jenkins runs multiple stages simultaneously:
+
+            ┌─ Unit Test
+Build ──────┼─ Integration Test
+            └─ Security Scan
+                    ↓
+                 Deploy
+Real DevSecOps Example
+
+After the build is complete:
+
+Unit Tests run
+SonarQube Scan runs
+Dependency Check runs
+
+all at the same time.
+
+This reduces pipeline execution time significantly.
+
+Sample Jenkinsfile
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+                echo 'Building Application'
+                sleep 10
+            }
+        }
+
+        stage('Parallel Activities') {
+            parallel {
+
+                stage('Unit Test') {
+                    steps {
+                        echo 'Running Unit Tests'
+                        sleep 20
+                    }
+                }
+
+                stage('SonarQube Scan') {
+                    steps {
+                        echo 'Running SonarQube Scan'
+                        sleep 15
+                    }
+                }
+
+                stage('Security Scan') {
+                    steps {
+                        echo 'Running Security Scan'
+                        sleep 25
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying Application'
+            }
+        }
+    }
+}
+Interview Explanation
+
+Parallel stages allow Jenkins to execute multiple independent tasks simultaneously instead of sequentially. 
+This reduces overall pipeline execution time. 
+Common use cases include running Unit Tests, SonarQube Analysis, Security Scans, and Integration Tests in parallel after the build stage.
